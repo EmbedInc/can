@@ -19,5 +19,9 @@ procedure can_send (                   {send a CAN frame}
   val_param;
 
 begin
-  cl.send_p^ (addr(cl), cl.dat_p, frame, stat);
+  sys_error_none (stat);               {init to no error encountered}
+
+  if cl.send_p <> nil then begin       {send routine supplied ?}
+    cl.send_p^ (addr(cl), cl.dat_p, frame, stat); {send the frame}
+    end;
   end;

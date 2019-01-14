@@ -18,10 +18,24 @@ function can_recv_avail (              {find whether received CAN frame availabl
   :boolean;                            {CAN frame is immediately available}
   val_param;
 
+var
+  fr: can_frame_t;
+  stat: sys_err_t;
+
 begin
-  writeln ('Function CAN_RECV_AVAIL not implemented yet.');
-  sys_bomb;
-  can_recv_avail := false;
+  can_recv_avail := false;             {init to no CAN frame available}
+
+  if can_queue_ent_avail (cl.inq) then begin {a frame is in the input queue ?}
+    can_recv_avail := true;
+    return;
+    end;
+
+  if cl.recv_p <> nil then begin       {explicit frame fetch routine exists ?}
+    if cl.recv_p^(addr(cl), cl.dat_p, 0.0, fr, stat) then begin {got a new frame ?}
+      can_queue_put (cl.inq, fr);      {save the frame in the input queue}
+      can_recv_avail := true;          {a frame is now immediately available ?}
+      end;
+    end;
   end;
 {
 ********************************************************************************
@@ -43,5 +57,20 @@ function can_recv (                    {get next received CAN frame}
   val_param;
 
 begin
-  can_recv := cl.recv_p^ (addr(cl), cl.dat_p, tout, frame, stat);
+  sys_error_none (stat);               {init to no error}
+
+  if cl.recv_p = nil then begin        {driver pushes frames asynchronously onto queue ?}
+    can_recv := can_queue_get(cl.inq, tout, frame); {get next frame from queue with timeout}
+    return;
+    end;
+{
+*   The driver has a explicit frame get routine for us to call.
+}
+  if can_queue_get(cl.inq, 0.0, frame) then begin {get frame from queue, if any}
+    can_recv := true;                  {indicate returning with a frame ?}
+    return;
+    end;
+
+  can_recv := cl.recv_p^ (             {call driver routine to get the frame}
+    addr(cl), cl.dat_p, tout, frame, stat);
   end;

@@ -17,6 +17,7 @@ type
 
   can_dev_k_t = (                      {types of CAN devices supported by this library}
     can_dev_none_k,                    {no device type specified}
+    can_dev_custom_k,                  {custom driver, not built into CAN library}
     can_dev_usbcan_k);                 {device supported by USBCAN library}
 
   can_dev_p_t = ^can_dev_t;
@@ -102,11 +103,22 @@ type
   can_t = record                       {state for one use of this library}
     dev: can_dev_t;                    {specifies the CAN device}
     mem_p: util_mem_context_p_t;       {points to private memory context}
+    inq: can_queue_t;                  {received CAN frames queue}
     dat_p: univ_ptr;                   {points to data private to the driver}
     send_p: can_send_p_t;              {pointer to driver send routine}
     recv_p: can_recv_p_t;              {pointer to driver receive routine}
     close_p: can_close_p_t;            {pointer to driver close routine}
     end;
+{
+*   Template for application-supplied routine to create a CAN library use with a
+*   custom driver.  See header comments in CAN_CUSTOM.PAS for details.
+}
+  can_open_p_t = ^procedure (          {open CAN library use to custom driver}
+    in out  cl: can_t;                 {CAN library use state to set up}
+    in      cfg: sys_int_conv32_t;     {optional 32 bit configuration parameter}
+    in      pnt: univ_ptr;             {optional pointer to additional config parameters}
+    in out  stat: sys_err_t);          {completion status}
+    val_param;
 {
 *   Public libary routines.
 }
@@ -188,13 +200,68 @@ function can_get_i32s (                {get next 32 bit signed integer from CAN 
   :sys_int_machine_t;                  {returned value}
   val_param; extern;
 
-procedure can_init (                   {init library use state, must be first call}
-  out     cl: can_t);                  {returned library use state}
+procedure can_init (                   {init CAN library use state}
+  out     cl: can_t);                  {library use state to initialize}
   val_param; extern;
 
 procedure can_open (                   {open new library use}
   in out  cl: can_t;                   {library use state}
   out     stat: sys_err_t);            {completion status}
+  val_param; extern;
+
+procedure can_open_custom (            {create new CAN library use, custom driver}
+  out     cl: can_t;                   {library use state to initialize and open}
+  in      open_p: can_open_p_t;        {pointer to routine to perform custom open}
+  in      cfg: sys_int_conv32_t;       {optional 32 bit configuration parameter}
+  in      pnt: univ_ptr;               {optional pointer to configuration parameters}
+  out     stat: sys_err_t);            {completion status}
+  val_param; extern;
+
+function can_queue_ent_avail (         {indicate whether entry from queue available}
+  in out  q: can_queue_t)              {queue to check}
+  :boolean;                            {TRUE for queue not empty, FALSE for empty}
+  val_param; extern;
+
+procedure can_queue_ent_new (          {return pointer to new queue entry}
+  in out  q: can_queue_t;              {queue to get new unused entry for}
+  out     ent_p: can_listent_p_t);     {returned pointer to the new entry}
+  val_param; extern;
+
+procedure can_queue_ent_del (          {delete a CAN frames queue entry}
+  in out  q: can_queue_t;              {queue to delete etnry entry for}
+  in out  ent_p: can_listent_p_t);     {pointer to unused entry, returned NIL}
+  val_param; extern;
+
+procedure can_queue_ent_get (          {get next queue entry, wait with timeout}
+  in out  q: can_queue_t;              {queue to get entry for}
+  in      tout: real;                  {maximum wait time, seconds}
+  out     ent_p: can_listent_p_t);     {returned pnt to entry, NIL if none}
+  val_param; extern;
+
+procedure can_queue_ent_put (          {add entry to end of can frames queue}
+  in out  q: can_queue_t;              {queue to add entry to}
+  in out  ent_p: can_listent_p_t);     {pointer to the entry to add, returned NIL}
+  val_param; extern;
+
+function can_queue_get (               {get next CAN frame from queue}
+  in out  q: can_queue_t;              {queue to get entry for}
+  in      tout: real;                  {maximum wait time, seconds}
+  out     frame: can_frame_t)          {the returned CAN frame}
+  :boolean;                            {TRUE with frame, FALSE with timeout}
+  val_param; extern;
+
+procedure can_queue_init (             {initialize a can frames queue}
+  out     q: can_queue_t;              {the queue to initialize}
+  in out  mem: util_mem_context_t);    {parent memory context}
+  val_param; extern;
+
+procedure can_queue_put (              {add CAN frame to end of queue}
+  in out  q: can_queue_t;              {the CAN frames queue}
+  in      frame: can_frame_t);         {the CAN frame to add}
+  val_param; extern;
+
+procedure can_queue_release (          {release system resources of a CAN frames queue}
+  in out  q: can_queue_t);             {the queue, will be returned unusable}
   val_param; extern;
 
 function can_recv (                    {get next received CAN frame}
