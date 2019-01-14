@@ -14,8 +14,8 @@ if exist %libname%3.h del %libname%3.h
 sst %libname%3.insall.pas -show_unused 0 -local_ins -ins %libname%3.ins.pas
 rename %libname%3.insall.c %libname%3.h
 
-call src_pas %srcdir% %libname%_add %1
 call src_pas %srcdir% %libname%_devlist %1
+call src_pas %srcdir% %libname%_frame %1
 call src_pas %srcdir% %libname%_open %1
 call src_pas %srcdir% %libname%_queue %1
 call src_pas %srcdir% %libname%_recv %1

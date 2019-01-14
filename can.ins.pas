@@ -54,6 +54,7 @@ type
   can_frame_t = record                 {info about any one CAN frame}
     id: sys_int_conv32_t;              {frame ID}
     ndat: sys_int_conv8_t;             {number of data bytes, 0-8}
+    geti: sys_int_conv8_t;             {next data byte to get, 0-7}
     dat: can_dat_t;                    {data bytes array}
     flags: can_frflag_t;               {set of option flags}
     end;
@@ -141,6 +142,50 @@ procedure can_devlist_del (            {delete CAN devices list}
 procedure can_devlist_get (            {get list of known CAN devices available to this system}
   in out  mem: util_mem_context_t;     {parent context for list memory}
   out     devs: can_devs_t);           {returned list of devices}
+  val_param; extern;
+
+procedure can_frame_init (             {init CAN frame descriptor}
+  out     fr: can_frame_t);            {all fields set, STD data frame, no bytes, ID 0}
+  val_param; extern;
+
+function can_get_i8u (                 {get next 8 bit unsigned integer from CAN frame}
+  in out  fr: can_frame_t)             {frame to get data from}
+  :sys_int_machine_t;                  {0 to 255 value}
+  val_param; extern;
+
+function can_get_i8s (                 {get next 8 bit signed integer from CAN frame}
+  in out  fr: can_frame_t)             {frame to get data from}
+  :sys_int_machine_t;                  {-128 to +127 value}
+  val_param; extern;
+
+function can_get_i16u (                {get next 16 bit unsigned integer from CAN frame}
+  in out  fr: can_frame_t)             {frame to get data from}
+  :sys_int_machine_t;                  {0 to 65535 value}
+  val_param; extern;
+
+function can_get_i16s (                {get next 16 bit signed integer from CAN frame}
+  in out  fr: can_frame_t)             {frame to get data from}
+  :sys_int_machine_t;                  {-32768 to +32767 value}
+  val_param; extern;
+
+function can_get_i24u (                {get next 24 bit unsigned integer from CAN frame}
+  in out  fr: can_frame_t)             {frame to get data from}
+  :sys_int_machine_t;                  {returned value}
+  val_param; extern;
+
+function can_get_i24s (                {get next 24 bit signed integer from CAN frame}
+  in out  fr: can_frame_t)             {frame to get data from}
+  :sys_int_machine_t;                  {returned value}
+  val_param; extern;
+
+function can_get_i32u (                {get next 32 bit unsigned integer from CAN frame}
+  in out  fr: can_frame_t)             {frame to get data from}
+  :sys_int_machine_t;                  {returned value}
+  val_param; extern;
+
+function can_get_i32s (                {get next 32 bit signed integer from CAN frame}
+  in out  fr: can_frame_t)             {frame to get data from}
+  :sys_int_machine_t;                  {returned value}
   val_param; extern;
 
 procedure can_init (                   {init library use state, must be first call}
