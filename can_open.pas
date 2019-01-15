@@ -24,6 +24,7 @@ procedure can_init (                   {init CAN library use state}
 
 var
   ii: sys_int_machine_t;
+  stat: sys_err_t;
 
 begin
   cl.dev.name.max := size_char(cl.dev.name.str);
@@ -36,13 +37,19 @@ begin
     end;
   cl.dev.devtype := can_dev_none_k;
 
+  sys_thread_lock_create (cl.lk_send, stat);
+  sys_error_abort (stat, '', '', nil, 0);
+
   util_mem_context_get (util_top_mem_context, cl.mem_p); {create memory context}
+
   can_queue_init (cl.inq, cl.mem_p^);  {set up and init the input queue}
 
   cl.dat_p := nil;
   cl.send_p := nil;
   cl.recv_p := nil;
   cl.close_p := nil;
+
+  cl.quit := false;
   end;
 {
 ********************************************************************************
@@ -114,7 +121,11 @@ procedure can_close (                  {end a use of this library}
   out     stat: sys_err_t);            {completion status}
   val_param;
 
+var
+  stat2: sys_err_t;                    {to avoid corrupting STAT}
+
 begin
+  cl.quit := true;                     {indicate trying to close this library use}
   sys_error_none (stat);               {init to no error}
 
   if cl.close_p <> nil then begin      {driver close routine exists ?}
@@ -123,4 +134,5 @@ begin
 
   can_queue_release (cl.inq);          {release input queue resources}
   util_mem_context_del (cl.mem_p);     {delete all dynamic memory of this lib use}
+  sys_thread_lock_delete (cl.lk_send, stat2); {delete SEND_P mutex}
   end;

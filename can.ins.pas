@@ -102,12 +102,14 @@ type
 
   can_t = record                       {state for one use of this library}
     dev: can_dev_t;                    {specifies the CAN device}
+    lk_send: sys_sys_threadlock_t;     {lock for calling SEND_P^}
     mem_p: util_mem_context_p_t;       {points to private memory context}
     inq: can_queue_t;                  {received CAN frames queue}
     dat_p: univ_ptr;                   {points to data private to the driver}
     send_p: can_send_p_t;              {pointer to driver send routine}
     recv_p: can_recv_p_t;              {pointer to driver receive routine}
     close_p: can_close_p_t;            {pointer to driver close routine}
+    quit: boolean;                     {trying to close this library use}
     end;
 {
 *   Template for application-supplied routine to create a CAN library use with a

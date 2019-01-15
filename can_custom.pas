@@ -95,6 +95,24 @@
 *   resources, allocated, etc.  The only restriction is that a custom close
 *   routine must then be provided to deallocate any such system resources other
 *   than dynamic memory under the CL.MEM_P^ context.
+*
+*   RECV_P routine
+*
+*     This routine is optional.  The driver needs to do nothing at all if it
+*     is not capable of receiving CAN frames.  Otherwise, there are two choices.
+*     The driver can asynchronously push received CAN frames onto the input
+*     queue, or it can provide a routine for the CAN library to explicitly call
+*     via the RECV_P pointer.  There is no mutex around calling RECV_P^.  If the
+*     application will call CAN_RECV from multiple threads, then the driver
+*     should push received frames onto the input queue.  Reads and writes to and
+*     from the queue are multi-thread safe.
+*
+*   SEND_P routine
+*
+*     The CAN library has no queue for sending CAN frames.  Each frame is passed
+*     to the driver when CAN_SEND is called.  A mutex is used to guarantee that
+*     only one thread at a time is calling SEND_P^, even if multiple threads
+*     call CAN_SEND simultaneously.
 }
 module can_custom;
 define can_open_custom;

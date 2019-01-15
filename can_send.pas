@@ -22,6 +22,8 @@ begin
   sys_error_none (stat);               {init to no error encountered}
 
   if cl.send_p <> nil then begin       {send routine supplied ?}
+    sys_thread_lock_enter (cl.lk_send); {acquire exclusive lock on sending}
     cl.send_p^ (addr(cl), cl.dat_p, frame, stat); {send the frame}
+    sys_thread_lock_leave (cl.lk_send); {release sending lock}
     end;
   end;
