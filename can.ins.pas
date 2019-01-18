@@ -274,7 +274,7 @@ function can_recv (                    {get next received CAN frame}
   :boolean;                            {TRUE with frame, FALSE with timeout or error}
   val_param; extern;
 
-function can_recv_avail (              {find whether received CAN frame available}
+function can_recv_check (              {find whether received CAN frame available}
   in out  cl: can_t)                   {state for this use of the library}
   :boolean;                            {CAN frame is immediately available}
   val_param; extern;

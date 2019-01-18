@@ -1,19 +1,19 @@
 {   Routines for sending CAN frames.
 }
 module can_recv;
-define can_recv_avail;
+define can_recv_check;
 define can_recv;
 
 %include 'can2.ins.pas';
 {
 ********************************************************************************
 *
-*   Function CAN_RECV_AVAIL (CL)
+*   Function CAN_RECV_CHECK (CL)
 *
 *   Returns TRUE if a received CAN frame is immediately available, and FALSE if
 *   none is.
 }
-function can_recv_avail (              {find whether received CAN frame available}
+function can_recv_check (              {find whether received CAN frame available}
   in out  cl: can_t)                   {state for this use of the library}
   :boolean;                            {CAN frame is immediately available}
   val_param;
@@ -23,17 +23,17 @@ var
   stat: sys_err_t;
 
 begin
-  can_recv_avail := false;             {init to no CAN frame available}
+  can_recv_check := false;             {init to no CAN frame available}
 
   if can_queue_ent_avail (cl.inq) then begin {a frame is in the input queue ?}
-    can_recv_avail := true;
+    can_recv_check := true;
     return;
     end;
 
   if cl.recv_p <> nil then begin       {explicit frame fetch routine exists ?}
     if cl.recv_p^(addr(cl), cl.dat_p, 0.0, fr, stat) then begin {got a new frame ?}
       can_queue_put (cl.inq, fr);      {save the frame in the input queue}
-      can_recv_avail := true;          {a frame is now immediately available ?}
+      can_recv_check := true;          {a frame is now immediately available ?}
       end;
     end;
   end;
