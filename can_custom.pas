@@ -48,7 +48,7 @@
 *       pushed onto the queue, then no frames will be received at the
 *       application level.
 *
-*     - Set CL.CLOSE_P pointint to a custom close routine, if one is needed.
+*     - Set CL.CLOSE_P pointing to a custom close routine, if one is needed.
 *       When such a routine is referenced, it will be called by CAN_CLOSE before
 *       and CAN library memory is deallocated.  A custom close routine is only
 *       required if additional actions need to be taken to deallocate system

@@ -3,6 +3,7 @@
 }
 module can_frame;
 define can_frame_init;
+define can_get_reset;
 define can_add8;
 define can_add16;
 define can_add24;
@@ -46,6 +47,21 @@ begin
   fr.ndat := 0;
   fr.geti := 0;
   fr.flags := [];
+  end;
+{
+********************************************************************************
+*
+*   Subroutine CAN_GET_RESET (FR)
+*
+*   Reset the data byte reading state of the CAN frame FR, so that the first
+*   data byte will be the next byte read.
+}
+procedure can_get_reset (              {reset to read first data byte next time}
+  in out  fr: can_frame_t);            {frame to reset read index of}
+  val_param;
+
+begin
+  fr.geti := 0;                        {reset of index of next data byte to get}
   end;
 {
 ********************************************************************************

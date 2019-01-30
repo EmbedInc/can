@@ -202,6 +202,10 @@ function can_get_i32s (                {get next 32 bit signed integer from CAN 
   :sys_int_machine_t;                  {returned value}
   val_param; extern;
 
+procedure can_get_reset (              {reset to read first data byte next time}
+  in out  fr: can_frame_t);            {frame to reset read index of}
+  val_param; extern;
+
 procedure can_init (                   {init CAN library use state}
   out     cl: can_t);                  {library use state to initialize}
   val_param; extern;
