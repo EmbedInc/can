@@ -63,7 +63,6 @@ begin
 
   sys_thread_lock_enter (q.lock);      {get exclusive access to this queue}
   sys_event_del_bool (q.ev);
-  sys_error_abort (stat, 'can', 'err_lock_del_queue', nil, 0);
   q.first_p := nil;
   q.last_p := nil;
   q.free_p := nil;
@@ -72,6 +71,7 @@ begin
   sys_thread_lock_leave (q.lock);      {release exclusive access to the queue}
 
   sys_thread_lock_delete (q.lock, stat);
+  sys_error_abort (stat, 'can', 'err_lock_del_queue', nil, 0);
   end;
 {
 ********************************************************************************
