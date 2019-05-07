@@ -50,7 +50,7 @@
 *
 *     - Set CL.CLOSE_P pointing to a custom close routine, if one is needed.
 *       When such a routine is referenced, it will be called by CAN_CLOSE before
-*       and CAN library memory is deallocated.  A custom close routine is only
+*       any CAN library memory is deallocated.  A custom close routine is only
 *       required if additional actions need to be taken to deallocate system
 *       resources other than those built into the CAN library use, and that are
 *       not deallocated by deleting the memory context pointed to by CL.MEM_P.
