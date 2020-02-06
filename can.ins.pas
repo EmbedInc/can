@@ -124,6 +124,16 @@ type
 {
 *   Public libary routines.
 }
+procedure can_add_fp32 (               {add IEEE 32 bit floating point to CAN frame}
+  in out  fr: can_frame_t;             {the frame to add the bytes to}
+  in      v: double);                  {the value to add}
+  val_param; extern;
+
+procedure can_add_fp32f (              {add Embed dsPIC 32 bit fast FP to CAN frame}
+  in out  fr: can_frame_t;             {the frame to add the bytes to}
+  in      v: double);                  {the value to add}
+  val_param; extern;
+
 procedure can_add8 (                   {add one 8 bit byte to a CAN frame being built}
   in out  frame: can_frame_t;          {the frame to add a byte to}
   in      b: sys_int_conv8_t);         {byte value in the low bits}
@@ -160,6 +170,16 @@ procedure can_devlist_get (            {get list of known CAN devices available 
 
 procedure can_frame_init (             {init CAN frame descriptor}
   out     fr: can_frame_t);            {all fields set, STD data frame, no bytes, ID 0}
+  val_param; extern;
+
+function can_get_fp32 (                {get IEEE 32 bit FP from CAN frame}
+  in out  fr: can_frame_t)             {the CAN frame to get the data from}
+  :double;
+  val_param; extern;
+
+function can_get_fp32f (               {get Embed 32 bit dsPIC fast FP value}
+  in out  fr: can_frame_t)             {the CAN frame to get the data from}
+  :double;
   val_param; extern;
 
 function can_get_i8u (                 {get next 8 bit unsigned integer from CAN frame}

@@ -8,6 +8,8 @@ define can_add8;
 define can_add16;
 define can_add24;
 define can_add32;
+define can_add_fp32;
+define can_add_fp32f;
 define can_get_i8u;
 define can_get_i8s;
 define can_get_i16u;
@@ -16,6 +18,8 @@ define can_get_i24u;
 define can_get_i24s;
 define can_get_i32u;
 define can_get_i32s;
+define can_get_fp32;
+define can_get_fp32f;
 %include 'can2.ins.pas';
 {
 ********************************************************************************
@@ -127,6 +131,49 @@ begin
   can_add8 (frame, rshft(w, 16));
   can_add8 (frame, rshft(w, 8));
   can_add8 (frame, w);
+  end;
+{
+********************************************************************************
+*
+*   Subroutine CAN_ADD_FP32 (FR, V)
+*
+*   Add the value of V in IEEE 32 bit floating point format to the CAN frame.
+*   This will add 4 bytes (32 bits).  The bytes are added in most to least
+*   significant order.
+}
+procedure can_add_fp32 (               {add IEEE 32 bit floating point to CAN frame}
+  in out  fr: can_frame_t;             {the frame to add the bytes to}
+  in      v: double);                  {the value to add}
+  val_param;
+
+var
+  fp32: sys_fp_ieee32_t;               {the input value in IEEE 32 bit FP format}
+
+begin
+  fp32 := sys_fp_to_ieee32 (v);        {convert the value to IEEE 32 bit FP format}
+  can_add32 (fr, integer32(fp32));     {add the data bytes to the CAN frame}
+  end;
+{
+********************************************************************************
+*
+*   Subroutine CAN_ADD_FP32F (FR, V)
+*
+*   Add the value of V in Embed dsPIC 32 bit fast floating point format to the
+*   CAN frame.  This will add 4 bytes (32 bits).  The bytes are added in most to
+*   least significant order.
+}
+procedure can_add_fp32f (              {add Embed dsPIC 32 bit fast FP to CAN frame}
+  in out  fr: can_frame_t;             {the frame to add the bytes to}
+  in      v: double);                  {the value to add}
+  val_param;
+
+var
+  fp32f: pic_fp32f_t;                  {V in Embed dsPIC fast 32 bit FP format}
+
+begin
+  fp32f := pic_fp32f_f_real (v);       {convert to the target FP format}
+  can_add16 (fr, fp32f.w1);            {add the high bytes to the CAN frame}
+  can_add16 (fr, fp32f.w0);            {add the low bytes to the CAN frame}
   end;
 {
 ********************************************************************************
@@ -255,4 +302,45 @@ begin
   ii := lshft(ii, 8) ! can_get_i8u (fr);
   ii := lshft(ii, 8) ! can_get_i8u (fr);
   can_get_i32s := ii;
+  end;
+{
+********************************************************************************
+*
+*   Function CAN_GET_FP32 (FR)
+*
+*   Return the next 4 CAN frame data bytes interpreted as a IEEE 32 bit floating
+*   point value.  The bytes are assumed to be stored in most to least
+*   significant order.
+}
+function can_get_fp32 (                {get IEEE 32 bit FP from CAN frame}
+  in out  fr: can_frame_t)             {the CAN frame to get the data from}
+  :double;
+  val_param;
+
+begin
+  can_get_fp32 :=
+    sys_fp_from_ieee32( sys_fp_ieee32_t(can_get_i32u(fr)) );
+  end;
+{
+********************************************************************************
+*
+*   Function CAN_GET_FP32F (FR)
+*
+*   Return the next 4 CAN frame data bytes interpreted as a Embed dsPIC 32 bit
+*   fast floating point value.  The bytes are assumed to be stored in most to
+*   least significant order.
+}
+function can_get_fp32f (               {get Embed 32 bit dsPIC fast FP value}
+  in out  fr: can_frame_t)             {the CAN frame to get the data from}
+  :double;
+  val_param;
+
+var
+  fp32f: pic_fp32f_t;                  {value in dsPIC fast FP format}
+
+begin
+  fp32f.w1 := can_get_i16u (fr);       {get the high 16 bit word}
+  fp32f.w0 := can_get_i16u (fr);       {get the low 16 bit word}
+  can_get_fp32f :=                     {convert to internal format, return value}
+    pic_fp32f_t_real (fp32f);
   end;
