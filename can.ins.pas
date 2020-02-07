@@ -5,6 +5,8 @@ const
   can_subsys_k = -58;                  {ID of this subsystem}
   can_stat_devtype_bad_k = 1;          {unrecognized CAN device type ID}
   can_stat_nodev_k = 2;                {no device found to open}
+  can_stat_unread_k = 3;               {unread data bytes left}
+  can_stat_ovread_k = 4;               {attempt to read more data bytes than available}
 
   can_speclen_k = 80;                  {number of optional device spec bytes}
 {
@@ -55,7 +57,7 @@ type
   can_frame_t = record                 {info about any one CAN frame}
     id: sys_int_conv32_t;              {frame ID}
     ndat: sys_int_conv8_t;             {number of data bytes, 0-8}
-    geti: sys_int_conv8_t;             {next data byte to get, 0-7}
+    geti: sys_int_conv8_t;             {0-N index of next data byte to get}
     dat: can_dat_t;                    {data bytes array}
     flags: can_frflag_t;               {set of option flags}
     end;
@@ -172,6 +174,12 @@ procedure can_frame_init (             {init CAN frame descriptor}
   out     fr: can_frame_t);            {all fields set, STD data frame, no bytes, ID 0}
   val_param; extern;
 
+function can_get_err (                 {check for data bytes exactly used up}
+  in      fr: can_frame_t;             {CAN frame to check reading state of}
+  out     stat: sys_err_t)             {error status if data not exactly used up}
+  :boolean;                            {FALSE for data exactly used up}
+  val_param; extern;
+
 function can_get_fp32 (                {get IEEE 32 bit FP from CAN frame}
   in out  fr: can_frame_t)             {the CAN frame to get the data from}
   :double;
@@ -220,6 +228,11 @@ function can_get_i32u (                {get next 32 bit unsigned integer from CA
 function can_get_i32s (                {get next 32 bit signed integer from CAN frame}
   in out  fr: can_frame_t)             {frame to get data from}
   :sys_int_machine_t;                  {returned value}
+  val_param; extern;
+
+function can_get_left (                {get number of unread data bytes left}
+  in out  fr: can_frame_t)             {CAN frame to check}
+  :sys_int_machine_t;                  {unread bytes, always 0-8 range}
   val_param; extern;
 
 procedure can_get_reset (              {reset to read first data byte next time}

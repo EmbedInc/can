@@ -1,11 +1,18 @@
 /*   Messages related to the CAN library.
-
+/*
 msg err1
   lan english
     Unexpected CAN device type ID of value %p1i encountered.
 msg err2
   lan english
     No CAN device found to open.
+msg err3
+  lan english
+    Unread data bytes left in CAN frame.  %p1i bytes available, %p2i read.
+msg err4
+  lan english
+    Attempt to read past end of CAN frame data bytes.  Only %p1i bytes
+    available.
 
 msg err_lock_qinit
   lan english

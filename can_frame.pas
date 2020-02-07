@@ -10,6 +10,7 @@ define can_add24;
 define can_add32;
 define can_add_fp32;
 define can_add_fp32f;
+define can_get_left;
 define can_get_i8u;
 define can_get_i8s;
 define can_get_i16u;
@@ -20,6 +21,7 @@ define can_get_i32u;
 define can_get_i32s;
 define can_get_fp32;
 define can_get_fp32f;
+define can_get_err;
 %include 'can2.ins.pas';
 {
 ********************************************************************************
@@ -178,6 +180,21 @@ begin
 {
 ********************************************************************************
 *
+*   Function CAN_GET_LEFT (FR)
+*
+*   Returns the number of unread data bytes left in the CAN frame.
+}
+function can_get_left (                {get number of unread data bytes left}
+  in out  fr: can_frame_t)             {CAN frame to check}
+  :sys_int_machine_t;                  {unread bytes, always 0-8 range}
+  val_param;
+
+begin
+  can_get_left := max(0, fr.ndat - fr.geti);
+  end;
+{
+********************************************************************************
+*
 *   Function CAN_GET_I8U (FR)
 *
 *   Gets the next unread data from the CAN frame FR.  The unsigned 0-255 value
@@ -194,10 +211,13 @@ function can_get_i8u (                 {get next 8 bit unsigned integer from CAN
 
 begin
   can_get_i8u := 0;                    {init to the value for no byte available}
-  if fr.geti < fr.ndat then begin      {there is at least one unread byte ?}
-    can_get_i8u := fr.dat[fr.geti];    {fetch the data byte}
-    fr.geti := fr.geti + 1;            {update read index for next time}
+  if fr.geti >= fr.ndat then begin     {no more data bytes ?}
+    fr.geti := fr.ndat + 1;            {remember attempt to read past end of data}
+    return;
     end;
+
+  can_get_i8u := fr.dat[fr.geti];      {fetch the data byte}
+  fr.geti := fr.geti + 1;              {update read index for next time}
   end;
 {
 ********************************************************************************
@@ -343,4 +363,39 @@ begin
   fp32f.w0 := can_get_i16u (fr);       {get the low 16 bit word}
   can_get_fp32f :=                     {convert to internal format, return value}
     pic_fp32f_t_real (fp32f);
+  end;
+{
+********************************************************************************
+*
+*   Function CAN_GET_ERR (FR, STAT)
+*
+*   Check for error after all the data bytes of the CAN frame are supposed to
+*   have been read.  The funtion returns FALSE with STAT set to no error if all
+*   the data bytes were read, but no attempt was made to read past the end of
+*   the data.  Otherwise, the function returns TRUE with STAT set to indicate
+*   a appropriate error.
+}
+function can_get_err (                 {check for data bytes exactly used up}
+  in      fr: can_frame_t;             {CAN frame to check reading state of}
+  out     stat: sys_err_t)             {error status if data not exactly used up}
+  :boolean;                            {FALSE for data exactly used up}
+  val_param;
+
+begin
+  can_get_err := false;                {init to no error}
+  sys_error_none (stat);
+  if fr.geti = fr.ndat then return;    {data bytes exactly used up ?}
+
+  if fr.geti < fr.ndat
+    then begin                         {some bytes not read}
+      sys_stat_set (can_subsys_k, can_stat_unread_k, stat);
+      sys_stat_parm_int (fr.ndat, stat); {number of available bytes}
+      sys_stat_parm_int (fr.ndat - fr.geti, stat); {number of bytes read}
+      end
+    else begin                         {read past end of data bytes}
+      sys_stat_set (can_subsys_k, can_stat_ovread_k, stat);
+      sys_stat_parm_int (fr.ndat, stat); {number of available bytes}
+      end
+    ;
+  can_get_err := true;                 {indicate returning with error}
   end;
