@@ -84,7 +84,7 @@ type
     in      can_p: can_p_t;            {pointer to library use state}
     in      dat_p: univ_ptr;           {pointer to private driver state}
     in      frame: can_frame_t;        {the CAN frame to send}
-    out     stat: sys_err_t);          {completion status}
+    in out  stat: sys_err_t);          {completion status, caller init to no error}
     val_param;
 
   can_recv_p_t = ^function (           {function to get next received CAN frame}
@@ -92,14 +92,14 @@ type
     in      dat_p: univ_ptr;           {pointer to private driver state}
     in      tout: real;                {max seconds to wait}
     out     frame: can_frame_t;        {returned CAN frame}
-    out     stat: sys_err_t)           {completion status}
+    in out  stat: sys_err_t)           {completion status, caller init to no error}
     :boolean;                          {TRUE with frame, FALSE with timeout or error}
     val_param;
 
   can_close_p_t = ^procedure (         {subroutine to close connection to the device}
     in      can_p: can_p_t;            {pointer to library use state}
     in      dat_p: univ_ptr;           {pointer to private driver state}
-    out     stat: sys_err_t);          {completion status}
+    in out  stat: sys_err_t);          {completion status, caller init to no error}
     val_param;
 
   can_t = record                       {state for one use of this library}
@@ -121,7 +121,7 @@ type
     in out  cl: can_t;                 {CAN library use state to set up}
     in      cfg: sys_int_conv32_t;     {optional 32 bit configuration parameter}
     in      pnt: univ_ptr;             {optional pointer to additional config parameters}
-    in out  stat: sys_err_t);          {completion status}
+    in out  stat: sys_err_t);          {completion status, caller init to no error}
     val_param;
 {
 *   Public libary routines.
