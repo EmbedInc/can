@@ -240,7 +240,7 @@ var
   ii: sys_int_machine_t;
 begin
   ii := can_get_i8u (fr);
-  if (ii >= 16#80) then ii := 16#100;
+  if (ii >= 16#80) then ii := ii - 16#100;
   can_get_i8s := ii;
   end;
 
@@ -265,7 +265,7 @@ var
 begin
   ii := can_get_i8u (fr);
   ii := lshft(ii, 8) ! can_get_i8u (fr);
-  if (ii >= 16#8000) then ii := 16#10000;
+  if (ii >= 16#8000) then ii := ii - 16#10000;
   can_get_i16s := ii;
   end;
 
@@ -292,7 +292,7 @@ begin
   ii := can_get_i8u (fr);
   ii := lshft(ii, 8) ! can_get_i8u (fr);
   ii := lshft(ii, 8) ! can_get_i8u (fr);
-  if (ii >= 16#800000) then ii := 16#1000000;
+  if (ii >= 16#800000) then ii := ii - 16#1000000;
   can_get_i24s := ii;
   end;
 
